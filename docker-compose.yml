@@ -1,0 +1,49 @@
+version: '3.5'
+networks:
+  laravel4tradie:
+services:
+  nginx4tradie:
+    image: nginx:stable-alpine
+    container_name: nginxwe4tradie
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www/html
+      - ./nginx/default3.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php4tradie
+      - mysql4tradie
+    networks:
+      - laravel4tradie
+  mysql4tradie:
+    image: mysql:8.0
+    container_name: mysql4tradie
+    restart: unless-stopped
+    tty: true
+    ports:
+        - "4306:3306"
+    volumes:
+      - ./mysql_files:/var/lib/mysql
+
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    networks:
+      - laravel4tradie
+  php4tradie:
+    build:
+      context: .
+      dockerfile: Dockerfile #use the Dockerfile created earlier to build the image for this container 
+    container_name: php4tradie
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "9000:9000"
+    depends_on:
+      - mysql4tradie
+    networks:
+      - laravel4tradie
